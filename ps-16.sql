@@ -1,9 +1,9 @@
 CREATE PACKAGE log_util AS
 
-        --Функции --
+        --Р¤СѓРЅРєС†РёРё --
 
   
-        --процедуры ---
+        --РїСЂРѕС†РµРґСѓСЂС‹ ---
     PROCEDURE log_start ( p_proc_name IN VARCHAR2,
                           p_text IN VARCHAR2 DEFAULT NULL );
                           
@@ -22,7 +22,7 @@ CREATE PACKAGE BODY log_util AS
 
 
   
-        --процедуры ---
+        --РїСЂРѕС†РµРґСѓСЂС‹ ---
     --
     PROCEDURE log_start ( p_proc_name IN VARCHAR2,
                           p_text IN VARCHAR2 DEFAULT NULL ) IS
@@ -31,7 +31,7 @@ CREATE PACKAGE BODY log_util AS
     BEGIN
     
         IF p_text IS NULL THEN
-            v_text := 'Старт логування, назва процесу = '|| p_proc_name;
+            v_text := 'РЎС‚Р°СЂС‚ Р»РѕРіСѓРІР°РЅРЅСЏ, РЅР°Р·РІР° РїСЂРѕС†РµСЃСѓ = '|| p_proc_name;
         ELSE
             v_text := p_text;
         END IF;
@@ -48,7 +48,7 @@ CREATE PACKAGE BODY log_util AS
     BEGIN
     
         IF p_text IS NULL THEN
-            v_text := 'Завершення логування, назва процесу = '|| p_proc_name;
+            v_text := 'Р—Р°РІРµСЂС€РµРЅРЅСЏ Р»РѕРіСѓРІР°РЅРЅСЏ, РЅР°Р·РІР° РїСЂРѕС†РµСЃСѓ = '|| p_proc_name;
         ELSE
             v_text := p_text;
         END IF;
@@ -66,7 +66,7 @@ CREATE PACKAGE BODY log_util AS
     BEGIN
     
         IF p_text IS NULL THEN
-            v_text := 'В процедурі '|| p_proc_name || ' сталася помилка. ' || p_sqlerrm;
+            v_text := 'Р’ РїСЂРѕС†РµРґСѓСЂС– '|| p_proc_name || ' СЃС‚Р°Р»Р°СЃСЏ РїРѕРјРёР»РєР°. ' || p_sqlerrm;
         ELSE
             v_text := p_text;
         END IF;
