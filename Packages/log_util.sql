@@ -1,7 +1,13 @@
 CREATE PACKAGE log_util AS
 
         --Функции --
-        
+        PROCEDURE to_log ( p_appl_proc IN VARCHAR2, p_message IN VARCHAR2 ) IS
+            PRAGMA autonomous_transaction;
+        BEGIN
+            INSERT INTO logs(id, appl_proc, message)
+            VALUES(log_seq.NEXTVAL, p_appl_proc, p_message);
+            COMMIT;
+        END to_log;
   
         --процедуры ---
     PROCEDURE log_start ( p_proc_name IN VARCHAR2,
