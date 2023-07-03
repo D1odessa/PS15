@@ -85,7 +85,4 @@ CREATE PACKAGE BODY log_util AS
 END log_util;
 /
 -----
-begin
-log_util.log_start('add_user');
-end;
-/
+
