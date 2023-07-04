@@ -1,4 +1,4 @@
---4-- механізму додавання нового співробітника
+--4-- РјРµС…Р°РЅС–Р·РјСѓ РґРѕРґР°РІР°РЅРЅСЏ РЅРѕРІРѕРіРѕ СЃРїС–РІСЂРѕР±С–С‚РЅРёРєР°
           
             --UTIL
             
@@ -34,7 +34,7 @@
         v_employee_id NUMBER;
         v_sqlerrm VARCHAR2(600);
         
-        -- функция проверки наличия в таблице по ячейке
+        -- С„СѓРЅРєС†РёСЏ РїСЂРѕРІРµСЂРєРё РЅР°Р»РёС‡РёСЏ РІ С‚Р°Р±Р»РёС†Рµ РїРѕ СЏС‡РµР№РєРµ
         FUNCTION is_exist ( p_func IN VARCHAR2 DEFAULT 'count(*)',
                             p_what IN VARCHAR2,
                             p_colum IN VARCHAR2,
@@ -50,7 +50,7 @@
                         
           RETURN v_result;
           END is_exist;
-        --  
+        --  С„СѓРЅРєС†РёСЏ РѕРїСЂРµРґРµР»РµРЅРёСЏ СЃР»РµРґСѓСЋС‰РµРіРѕ id
          FUNCTION get_max_employee_id RETURN NUMBER IS
              vv_employee_id NUMBER;
           BEGIN
@@ -66,31 +66,31 @@
         --1
             log_util.log_start('add_employee');
             
-        --2 проверка 1
+        --2 РїСЂРѕРІРµСЂРєР° 1
             v_job_id_exist := is_exist('count(*)',p_job_id,'job_id','jobs');
             
                 IF v_job_id_exist =0 THEN
-                    raise_application_error(-20001,'Введено неіснуючий код посади');
+                    raise_application_error(-20001,'Р’РІРµРґРµРЅРѕ РЅРµС–СЃРЅСѓСЋС‡РёР№ РєРѕРґ РїРѕСЃР°РґРё');
                 END IF;
                 
-        --3 проверка 2  
+        --3 РїСЂРѕРІРµСЂРєР° 2  
             v_department_id_exist := is_exist ('count(*)',p_department_id,'department_id','departments');
                 
                 IF v_department_id_exist =0 THEN
-                    raise_application_error(-20001,'Введено неіснуючий ідентифікатор відділу');
+                    raise_application_error(-20001,'Р’РІРµРґРµРЅРѕ РЅРµС–СЃРЅСѓСЋС‡РёР№ С–РґРµРЅС‚РёС„С–РєР°С‚РѕСЂ РІС–РґРґС–Р»Сѓ');
                 END IF;
         
-        --4 проверка 3    
+        --4 РїСЂРѕРІРµСЂРєР° 3    
              v_min_salary := is_exist('min_salary',p_job_id,'job_id','jobs');
              v_max_salary := is_exist('max_salary',p_job_id,'job_id','jobs');
                 
                  IF p_salary < v_min_salary or p_salary > v_max_salary  THEN
-                    raise_application_error(-20001,'Введено неприпустиму заробітну плату для даного коду посади');
+                    raise_application_error(-20001,'Р’РІРµРґРµРЅРѕ РЅРµРїСЂРёРїСѓСЃС‚РёРјСѓ Р·Р°СЂРѕР±С–С‚РЅСѓ РїР»Р°С‚Сѓ РґР»СЏ РґР°РЅРѕРіРѕ РєРѕРґСѓ РїРѕСЃР°РґРё');
                  END IF;
         
-        --5 проверка рабочего времени
-                IF TO_CHAR(SYSDATE, 'DY') IN ('СБ', 'ВС') OR TO_CHAR(SYSDATE, 'hh24') < 8 OR TO_CHAR(SYSDATE, 'hh24') > 17 THEN
-                        raise_application_error (-20001, 'Ви можете додавати нового співробітника лише в робочий час');
+        --5 РїСЂРѕРІРµСЂРєР° СЂР°Р±РѕС‡РµРіРѕ РІСЂРµРјРµРЅРё
+                IF TO_CHAR(SYSDATE, 'DY') IN ('РЎР‘', 'Р’РЎ') OR TO_CHAR(SYSDATE, 'hh24') < 8 OR TO_CHAR(SYSDATE, 'hh24') > 17 THEN
+                        raise_application_error (-20001, 'Р’Рё РјРѕР¶РµС‚Рµ РґРѕРґР°РІР°С‚Рё РЅРѕРІРѕРіРѕ СЃРїС–РІСЂРѕР±С–С‚РЅРёРєР° Р»РёС€Рµ РІ СЂРѕР±РѕС‡РёР№ С‡Р°СЃ');
                     END IF;
                     
         --6
@@ -100,8 +100,8 @@
         VALUES(v_employee_id, p_first_name, p_last_name, p_email, p_phone_number, p_hire_date, p_job_id, p_salary, p_commission_pct, p_manager_id, p_department_id);
         COMMIT;
         
---        Співробітник ІМ'Я, Прізвище, КОД ПОСАДИ, ІД ДЕПАРТАМЕНТУ успішно додано до системи
-        dbms_output.put_line('Співробітник '||p_first_name||' '||p_last_name ||' ' ||p_job_id ||' ІД ДЕПАРТАМЕНТУ='||p_department_id|| 'успішно додано до системи');
+--        РЎРїС–РІСЂРѕР±С–С‚РЅРёРє Р†Рњ'РЇ, РџСЂС–Р·РІРёС‰Рµ, РљРћР” РџРћРЎРђР”Р, Р†Р” Р”Р•РџРђР РўРђРњР•РќРўРЈ СѓСЃРїС–С€РЅРѕ РґРѕРґР°РЅРѕ РґРѕ СЃРёСЃС‚РµРјРё
+        dbms_output.put_line('РЎРїС–РІСЂРѕР±С–С‚РЅРёРє '||p_first_name||' '||p_last_name ||' ' ||p_job_id ||' Р†Р” Р”Р•РџРђР РўРђРњР•РќРўРЈ='||p_department_id|| 'СѓСЃРїС–С€РЅРѕ РґРѕРґР°РЅРѕ РґРѕ СЃРёСЃС‚РµРјРё');
         
         log_util.log_finish('add_employee','gg');
 
@@ -109,9 +109,9 @@
     EXCEPTION
         
         WHEN OTHERS THEN
-            v_sqlerrm := sqlerrm ||' Не відома помилка' ;
+            v_sqlerrm := sqlerrm ||' РќРµ РІС–РґРѕРјР° РїРѕРјРёР»РєР°' ;
             log_util.log_error('add_employee',  v_sqlerrm); 
-            ROLLBACK; -- Відміняємо транзакцію у разі виникнення помилки
+            ROLLBACK; -- Р’С–РґРјС–РЅСЏС”РјРѕ С‚СЂР°РЅР·Р°РєС†С–СЋ Сѓ СЂР°Р·С– РІРёРЅРёРєРЅРµРЅРЅСЏ РїРѕРјРёР»РєРё
             raise_application_error(-20001, sqlerrm);
     
     END add_employee;
