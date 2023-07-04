@@ -1,6 +1,6 @@
 create or replace PACKAGE BODY util AS
 
---переменные
+--РїРµСЂРµРјРµРЅРЅС‹Рµ
     c_percent_of_min_salary CONSTANT NUMBER := 1.5;
    
    
@@ -71,9 +71,9 @@ create or replace PACKAGE BODY util AS
     
     EXCEPTION
         WHEN err_tab_ncor THEN
-            v_message := '"Неприпустиме значення! Очікується products або products_old" (код помилки -20001)' ||SQLERRM ;
+            v_message := '"РќРµРїСЂРёРїСѓСЃС‚РёРјРµ Р·РЅР°С‡РµРЅРЅСЏ! РћС‡С–РєСѓС”С‚СЊСЃСЏ products Р°Р±Рѕ products_old" (РєРѕРґ РїРѕРјРёР»РєРё -20001)' ||SQLERRM ;
             to_log(p_appl_proc => 'util.get_sum_price_sales', p_message => v_message);
-            raise_application_error(-20001, 'Неприпустиме значення! Очікується products або products_old" (код помилки -20001)');
+            raise_application_error(-20001, 'РќРµРїСЂРёРїСѓСЃС‚РёРјРµ Р·РЅР°С‡РµРЅРЅСЏ! РћС‡С–РєСѓС”С‚СЊСЃСЏ products Р°Р±Рѕ products_old" (РєРѕРґ РїРѕРјРёР»РєРё -20001)');
     
     END get_sum_price_sales;
     
@@ -158,7 +158,7 @@ END table_from_list;
         END;
     END get_currency;
     
-    --h07_01--   домашка 7_01
+    --h07_01--   РґРѕРјР°С€РєР° 7_01
     FUNCTION get_region_cnt_emp ( p_department_id NUMBER default null) RETURN tab_regions_list PIPELINED IS
 
     out_rec tab_regions_list := tab_regions_list();
@@ -208,7 +208,7 @@ END table_from_list;
     END get_region_cnt_emp;
 
     
-    --ПРОЦЕДУРЫ
+    --РџР РћР¦Р•Р”РЈР Р«
     
     -- 0 --
     
@@ -217,7 +217,7 @@ END table_from_list;
         BEGIN
         
             IF TO_CHAR(SYSDATE, 'DY', 'NLS_DATE_LANGUAGE = AMERICAN') IN ('SAT', 'SUN') THEN
-                raise_application_error (-20205, 'Ви можете вносити зміни лише у робочі дні');
+                raise_application_error (-20205, 'Р’Рё РјРѕР¶РµС‚Рµ РІРЅРѕСЃРёС‚Рё Р·РјС–РЅРё Р»РёС€Рµ Сѓ СЂРѕР±РѕС‡С– РґРЅС–');
             END IF;
           
                        
@@ -237,7 +237,7 @@ END table_from_list;
     BEGIN
     
 --        IF TO_CHAR(SYSDATE, 'DY', 'NLS_DATE_LANGUAGE = AMERICAN') IN ('SAT', 'SUN') THEN
---            raise_application_error (-20205, 'Ви можете вносити зміни лише у робочі дні');
+--            raise_application_error (-20205, 'Р’Рё РјРѕР¶РµС‚Рµ РІРЅРѕСЃРёС‚Рё Р·РјС–РЅРё Р»РёС€Рµ Сѓ СЂРѕР±РѕС‡С– РґРЅС–');
 --        END IF;
         check_work_time;
     
@@ -253,24 +253,24 @@ END table_from_list;
         --WHERE j.job_id = p_job_id;
         BEGIN
             IF ( p_min_salary < gc_min_salary OR p_max_salary < gc_min_salary ) THEN
-                --po_err := 'Передана зарплата менша за 2000';
+                --po_err := 'РџРµСЂРµРґР°РЅР° Р·Р°СЂРїР»Р°С‚Р° РјРµРЅС€Р° Р·Р° 2000';
                 RAISE salary_err;
             --elsif v_is_exist_job >=1 THEN
-            --   po_err := 'Посада '||p_job_id||' вже існує';
+            --   po_err := 'РџРѕСЃР°РґР° '||p_job_id||' РІР¶Рµ С–СЃРЅСѓС”';
             ELSE
                 INSERT INTO dima.jobs (job_id,job_title,min_salary,max_salary)
                 VALUES (p_job_id,p_job_title,p_min_salary,v_max_salary);
                 COMMIT;
-                po_err := 'Посада '||p_job_id||' успішно додана';
+                po_err := 'РџРѕСЃР°РґР° '||p_job_id||' СѓСЃРїС–С€РЅРѕ РґРѕРґР°РЅР°';
             END IF;
             
         EXCEPTION
             WHEN salary_err THEN
-                raise_application_error(-20001, 'Передана зарплата менша за 2000');
+                raise_application_error(-20001, 'РџРµСЂРµРґР°РЅР° Р·Р°СЂРїР»Р°С‚Р° РјРµРЅС€Р° Р·Р° 2000');
             WHEN dup_val_on_index THEN
-                raise_application_error(-20002, 'Посада '||p_job_id||' вже існує');
+                raise_application_error(-20002, 'РџРѕСЃР°РґР° '||p_job_id||' РІР¶Рµ С–СЃРЅСѓС”');
             WHEN OTHERS THEN
-                raise_application_error(-20003, 'Неизвестная ошибка при добавлении должности'|| SQLERRM);
+                raise_application_error(-20003, 'РќРµРёР·РІРµСЃС‚РЅР°СЏ РѕС€РёР±РєР° РїСЂРё РґРѕР±Р°РІР»РµРЅРёРё РґРѕР»Р¶РЅРѕСЃС‚Рё'|| SQLERRM);
             
         END;
     END add_new_jobs;
@@ -290,11 +290,11 @@ END table_from_list;
              delete from dima.jobs jb
              where jb.job_id = p_job_id;
              COMMIT;    
-             po_result := 'Посада '||p_job_id||' успішно видалена';
+             po_result := 'РџРѕСЃР°РґР° '||p_job_id||' СѓСЃРїС–С€РЅРѕ РІРёРґР°Р»РµРЅР°';
             
         EXCEPTION
             WHEN no_data_found THEN
-                raise_application_error(-20004, '"Посада '|| p_job_id ||' не існує"(код помилки -20004)');
+                raise_application_error(-20004, '"РџРѕСЃР°РґР° '|| p_job_id ||' РЅРµ С–СЃРЅСѓС”"(РєРѕРґ РїРѕРјРёР»РєРё -20004)');
                         
         END;
     END del_jobs;
@@ -312,39 +312,39 @@ END table_from_list;
         INTO v_balance_old
         FROM dima.balance b
         WHERE b.employee_id = p_employee_id
-        FOR UPDATE; -- Блокуємо рядок для оновлення
+        FOR UPDATE; -- Р‘Р»РѕРєСѓС”РјРѕ СЂСЏРґРѕРє РґР»СЏ РѕРЅРѕРІР»РµРЅРЅСЏ
     
         IF v_balance_old >= p_balance THEN
             UPDATE balance b
             SET b.balance = v_balance_old - p_balance
             WHERE employee_id = p_employee_id
     
-            RETURNING b.balance INTO v_balance_new; -- щоб не робити новий SELECT INTO
+            RETURNING b.balance INTO v_balance_new; -- С‰РѕР± РЅРµ СЂРѕР±РёС‚Рё РЅРѕРІРёР№ SELECT INTO
         ELSE
-            v_message := 'Employee_id = '||p_employee_id||'. Недостатньо коштів на рахунку. Поточний баланс '||v_balance_old||', спроба зняття '||p_balance||'';
+            v_message := 'Employee_id = '||p_employee_id||'. РќРµРґРѕСЃС‚Р°С‚РЅСЊРѕ РєРѕС€С‚С–РІ РЅР° СЂР°С…СѓРЅРєСѓ. РџРѕС‚РѕС‡РЅРёР№ Р±Р°Р»Р°РЅСЃ '||v_balance_old||', СЃРїСЂРѕР±Р° Р·РЅСЏС‚С‚СЏ '||p_balance||'';
             raise_application_error(-20001, v_message);
         END IF;
     
-        v_message := 'Employee_id = '||p_employee_id||'. Кошти успішно зняті з рахунку. Було '||v_balance_old||', стало '||v_balance_new||'';
+        v_message := 'Employee_id = '||p_employee_id||'. РљРѕС€С‚Рё СѓСЃРїС–С€РЅРѕ Р·РЅСЏС‚С– Р· СЂР°С…СѓРЅРєСѓ. Р‘СѓР»Рѕ '||v_balance_old||', СЃС‚Р°Р»Рѕ '||v_balance_new||'';
         dbms_output.put_line(v_message);
         to_log(p_appl_proc => 'util.update_balance', p_message => v_message);
     
---        IF 1=0 THEN -- зімітуємо непередбачену помилку
---            v_message := 'Непередбачена помилка';
+--        IF 1=0 THEN -- Р·С–РјС–С‚СѓС”РјРѕ РЅРµРїРµСЂРµРґР±Р°С‡РµРЅСѓ РїРѕРјРёР»РєСѓ
+--            v_message := 'РќРµРїРµСЂРµРґР±Р°С‡РµРЅР° РїРѕРјРёР»РєР°';
 --            raise_application_error(-20001, v_message);
 --        END IF;
-    COMMIT; -- зберігаємо новий баланс та знімаємо блокування в поточній транзакції
+    COMMIT; -- Р·Р±РµСЂС–РіР°С”РјРѕ РЅРѕРІРёР№ Р±Р°Р»Р°РЅСЃ С‚Р° Р·РЅС–РјР°С”РјРѕ Р±Р»РѕРєСѓРІР°РЅРЅСЏ РІ РїРѕС‚РѕС‡РЅС–Р№ С‚СЂР°РЅР·Р°РєС†С–С—
     
     EXCEPTION
         WHEN OTHERS THEN
             to_log(p_appl_proc => 'util.update_balance', p_message => NVL(v_message, 'Employee_id = '||p_employee_id||'. ' ||SQLERRM));
-            ROLLBACK; -- Відміняємо транзакцію у разі виникнення помилки
-            raise_application_error(-20001, NVL(v_message, 'Не відома помилка'));
+            ROLLBACK; -- Р’С–РґРјС–РЅСЏС”РјРѕ С‚СЂР°РЅР·Р°РєС†С–СЋ Сѓ СЂР°Р·С– РІРёРЅРёРєРЅРµРЅРЅСЏ РїРѕРјРёР»РєРё
+            raise_application_error(-20001, NVL(v_message, 'РќРµ РІС–РґРѕРјР° РїРѕРјРёР»РєР°'));
     
     END update_balance;
     
     
-    --4-- Процедура - механізму додавання нового співробітника
+    --4-- РџСЂРѕС†РµРґСѓСЂР° - РјРµС…Р°РЅС–Р·РјСѓ РґРѕРґР°РІР°РЅРЅСЏ РЅРѕРІРѕРіРѕ СЃРїС–РІСЂРѕР±С–С‚РЅРёРєР°
     
     PROCEDURE add_employee (  p_first_name IN VARCHAR2,
                               p_last_name IN VARCHAR2,
@@ -365,7 +365,7 @@ END table_from_list;
         v_employee_id NUMBER;
         v_sqlerrm VARCHAR2(600);
         
-        -- функция проверки наличия в таблице по ячейке
+        -- С„СѓРЅРєС†РёСЏ РїСЂРѕРІРµСЂРєРё РЅР°Р»РёС‡РёСЏ РІ С‚Р°Р±Р»РёС†Рµ РїРѕ СЏС‡РµР№РєРµ
         FUNCTION is_exist ( p_func IN VARCHAR2 DEFAULT 'count(*)',
                             p_what IN VARCHAR2,
                             p_colum IN VARCHAR2,
@@ -397,31 +397,31 @@ END table_from_list;
         --1
             log_util.log_start('add_employee');
             
-        --2 проверка 1
+        --2 РїСЂРѕРІРµСЂРєР° 1
             v_job_id_exist := is_exist('count(*)',p_job_id,'job_id','jobs');
             
                 IF v_job_id_exist =0 THEN
-                    raise_application_error(-20001,'Введено неіснуючий код посади');
+                    raise_application_error(-20001,'Р’РІРµРґРµРЅРѕ РЅРµС–СЃРЅСѓСЋС‡РёР№ РєРѕРґ РїРѕСЃР°РґРё');
                 END IF;
                 
-        --3 проверка 2  
+        --3 РїСЂРѕРІРµСЂРєР° 2  
             v_department_id_exist := is_exist ('count(*)',p_department_id,'department_id','departments');
                 
                 IF v_department_id_exist =0 THEN
-                    raise_application_error(-20001,'Введено неіснуючий ідентифікатор відділу');
+                    raise_application_error(-20001,'Р’РІРµРґРµРЅРѕ РЅРµС–СЃРЅСѓСЋС‡РёР№ С–РґРµРЅС‚РёС„С–РєР°С‚РѕСЂ РІС–РґРґС–Р»Сѓ');
                 END IF;
         
-        --4 проверка 3    
+        --4 РїСЂРѕРІРµСЂРєР° 3    
              v_min_salary := is_exist('min_salary',p_job_id,'job_id','jobs');
              v_max_salary := is_exist('max_salary',p_job_id,'job_id','jobs');
                 
                  IF p_salary < v_min_salary or p_salary > v_max_salary  THEN
-                    raise_application_error(-20001,'Введено неприпустиму заробітну плату для даного коду посади');
+                    raise_application_error(-20001,'Р’РІРµРґРµРЅРѕ РЅРµРїСЂРёРїСѓСЃС‚РёРјСѓ Р·Р°СЂРѕР±С–С‚РЅСѓ РїР»Р°С‚Сѓ РґР»СЏ РґР°РЅРѕРіРѕ РєРѕРґСѓ РїРѕСЃР°РґРё');
                  END IF;
         
-        --5 проверка рабочего времени
-                IF TO_CHAR(SYSDATE, 'DY') IN ('СБ', 'ВС') OR TO_CHAR(SYSDATE, 'hh24') < 8 OR TO_CHAR(SYSDATE, 'hh24') > 17 THEN
-                        raise_application_error (-20001, 'Ви можете додавати нового співробітника лише в робочий час');
+        --5 РїСЂРѕРІРµСЂРєР° СЂР°Р±РѕС‡РµРіРѕ РІСЂРµРјРµРЅРё
+                IF TO_CHAR(SYSDATE, 'DY') IN ('РЎР‘', 'Р’РЎ') OR TO_CHAR(SYSDATE, 'hh24') < 8 OR TO_CHAR(SYSDATE, 'hh24') > 17 THEN
+                        raise_application_error (-20001, 'Р’Рё РјРѕР¶РµС‚Рµ РґРѕРґР°РІР°С‚Рё РЅРѕРІРѕРіРѕ СЃРїС–РІСЂРѕР±С–С‚РЅРёРєР° Р»РёС€Рµ РІ СЂРѕР±РѕС‡РёР№ С‡Р°СЃ');
                     END IF;
                     
         --6
@@ -431,8 +431,8 @@ END table_from_list;
         VALUES(v_employee_id, p_first_name, p_last_name, p_email, p_phone_number, p_hire_date, p_job_id, p_salary, p_commission_pct, p_manager_id, p_department_id);
         COMMIT;
         
---        Співробітник ІМ'Я, Прізвище, КОД ПОСАДИ, ІД ДЕПАРТАМЕНТУ успішно додано до системи
-        dbms_output.put_line('Співробітник '||p_first_name||' '||p_last_name ||' ' ||p_job_id ||' ІД ДЕПАРТАМЕНТУ='||p_department_id|| 'успішно додано до системи');
+--        РЎРїС–РІСЂРѕР±С–С‚РЅРёРє Р†Рњ'РЇ, РџСЂС–Р·РІРёС‰Рµ, РљРћР” РџРћРЎРђР”Р, Р†Р” Р”Р•РџРђР РўРђРњР•РќРўРЈ СѓСЃРїС–С€РЅРѕ РґРѕРґР°РЅРѕ РґРѕ СЃРёСЃС‚РµРјРё
+        dbms_output.put_line('РЎРїС–РІСЂРѕР±С–С‚РЅРёРє '||p_first_name||' '||p_last_name ||' ' ||p_job_id ||' Р†Р” Р”Р•РџРђР РўРђРњР•РќРўРЈ='||p_department_id|| 'СѓСЃРїС–С€РЅРѕ РґРѕРґР°РЅРѕ РґРѕ СЃРёСЃС‚РµРјРё');
         
         log_util.log_finish('add_employee','gg');
 
@@ -440,9 +440,9 @@ END table_from_list;
     EXCEPTION
         
         WHEN OTHERS THEN
-            v_sqlerrm := sqlerrm ||' Не відома помилка' ;
+            v_sqlerrm := sqlerrm ||' РќРµ РІС–РґРѕРјР° РїРѕРјРёР»РєР°' ;
             log_util.log_error('add_employee',  v_sqlerrm); 
-            ROLLBACK; -- Відміняємо транзакцію у разі виникнення помилки
+            ROLLBACK; -- Р’С–РґРјС–РЅСЏС”РјРѕ С‚СЂР°РЅР·Р°РєС†С–СЋ Сѓ СЂР°Р·С– РІРёРЅРёРєРЅРµРЅРЅСЏ РїРѕРјРёР»РєРё
             raise_application_error(-20001, sqlerrm);
     
     END add_employee;
