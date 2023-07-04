@@ -434,7 +434,9 @@ END table_from_list;
 --        Співробітник ІМ'Я, Прізвище, КОД ПОСАДИ, ІД ДЕПАРТАМЕНТУ успішно додано до системи
         dbms_output.put_line('Співробітник '||p_first_name||' '||p_last_name ||' ' ||p_job_id ||' ІД ДЕПАРТАМЕНТУ='||p_department_id|| 'успішно додано до системи');
         
-        log_util.log_finish('add_employee','Співробітника успішно додано до системи');
+            v_sql := 'Співробітник '||p_first_name||' '||p_last_name ||' ' ||p_job_id ||' ІД ДЕПАРТАМЕНТУ='||p_department_id|| 'успішно додано до системи';
+        log_util.log_finish('add_employee',v_sql);
+        
 
         
     EXCEPTION
