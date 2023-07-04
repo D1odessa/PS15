@@ -68,7 +68,7 @@ CREATE PACKAGE BODY log_util AS
     PROCEDURE log_error ( p_proc_name IN VARCHAR2,
                           p_sqlerrm IN VARCHAR2,
                           p_text IN VARCHAR2 DEFAULT NULL ) IS
-        v_text VARCHAR2(120);
+        v_text VARCHAR2(320);
     
     BEGIN
     
