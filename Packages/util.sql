@@ -65,6 +65,9 @@ create or replace PACKAGE util AS
                               p_commission_pct IN VARCHAR2,
                               p_manager_id IN NUMBER,
                               p_department_id IN NUMBER );
+
+        --процедура удаления сотрудника
+        PROCEDURE fire_an_employee (  p_employee_id IN NUMBER );
    
    
 END util;
