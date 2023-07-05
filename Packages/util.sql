@@ -71,11 +71,47 @@ END util;
 ---------------------------------------------------------------------------------------------
 create or replace PACKAGE BODY util AS
 
---переменные
+----переменные
     c_percent_of_min_salary CONSTANT NUMBER := 1.5;
+    
+    
+----------- Функции внутри пакета util
    
+----------------- функция проверки наличия в таблице по ячейке
+        FUNCTION is_exist ( p_func IN VARCHAR2 DEFAULT 'count(*)',
+                            p_what IN VARCHAR2,
+                            p_colum IN VARCHAR2,
+                            p_where IN VARCHAR2 ) RETURN NUMBER IS
+                               
+             v_result NUMBER;
+             vv_sql VARCHAR2(600);
+          BEGIN
+            
+            vv_sql := 'select ' || p_func ||' FROM dima.'||p_where||' p
+                    WHERE p.'|| p_colum ||'='''|| p_what ||''' ';
+            EXECUTE IMMEDIATE vv_sql INTO v_result;
+                        
+          RETURN v_result;
+          END is_exist;   
+          
+          
+----------------- процедура доступа по времени
+        PROCEDURE time_access (p_employee_group IN NUMBER DEFAULT 1) IS
+            
+            BEGIN
+                IF p_employee_group = 1 THEN
+                    IF TO_CHAR(SYSDATE, 'DY') IN ('СБ', 'ВС') OR TO_CHAR(SYSDATE, 'hh24') < 8 OR TO_CHAR(SYSDATE, 'hh24') > 17 THEN
+                        raise_application_error (-20001, 'Ви можете додавати/видалити нового співробітника лише в робочий час');
+                    END IF;
+--                ELSIF  p_employee_group = 2 THEN
+                    
+                        
+                END IF;
+                
+            END time_access;
    
-    -- 
+------------------------ ФУНКЦИИ внешние
+-------------------- 
      FUNCTION add_year(p_date in DATE DEFAULT sysdate,
                        p_year in NUMBER ) RETURN DATE IS
     v_date DATE;
@@ -87,7 +123,7 @@ create or replace PACKAGE BODY util AS
         RETURN v_date;
     END add_year;
     
-    --  
+-----------------------    --  
     FUNCTION get_job_title ( p_employee_id IN NUMBER )  RETURN VARCHAR2 IS
         v_job_title dima.jobs.job_title%TYPE;
 
@@ -102,7 +138,7 @@ create or replace PACKAGE BODY util AS
         RETURN v_job_title;
     END get_job_title;
     
-    --
+-------------------------    --
     FUNCTION get_dep_name(p_employee_id IN NUMBER)  RETURN VARCHAR2 IS
         v_dep_name dima.departments.department_name%type;
 
@@ -119,7 +155,7 @@ create or replace PACKAGE BODY util AS
     END get_dep_name;
     
     
-    --
+---------------------------------------
         FUNCTION get_sum_price_sales(p_table VARCHAR2 DEFAULT 'products') RETURN NUMBER IS
        
         v_table VARCHAR2(50) := p_table;
@@ -148,7 +184,7 @@ create or replace PACKAGE BODY util AS
     
     END get_sum_price_sales;
     
-    --- 07 ------1
+------------------- 07 ------1
     FUNCTION table_from_list(    p_list_val IN VARCHAR2,
                                     p_separator IN VARCHAR2 DEFAULT ',') RETURN tab_value_list PIPELINED IS
 
@@ -185,7 +221,7 @@ create or replace PACKAGE BODY util AS
 
 END table_from_list;
 
-----7-------2
+--------7-------2
     FUNCTION get_currency (  p_currency IN VARCHAR2 DEFAULT 'USD',
                          p_exchangedate IN DATE DEFAULT SYSDATE) RETURN tab_exchange PIPELINED IS
     out_rec tab_exchange := tab_exchange();
@@ -229,7 +265,7 @@ END table_from_list;
         END;
     END get_currency;
     
-    --h07_01--   домашка 7_01
+------------h07_01--   домашка 7_01
     FUNCTION get_region_cnt_emp ( p_department_id NUMBER default null) RETURN tab_regions_list PIPELINED IS
 
     out_rec tab_regions_list := tab_regions_list();
@@ -279,9 +315,9 @@ END table_from_list;
     END get_region_cnt_emp;
 
     
-    --ПРОЦЕДУРЫ
+----------- ПРОЦЕДУРЫ внешние -------------------------
     
-    -- 0 --
+-------------- 0 --
     
     PROCEDURE check_work_time IS
                 
@@ -295,7 +331,7 @@ END table_from_list;
     END check_work_time;
     
     
-    -- 1 --
+---------------- 1 --
         PROCEDURE add_new_jobs(   p_job_id        IN VARCHAR2,
                                   p_job_title     IN VARCHAR2,
                                   p_min_salary    IN NUMBER,
@@ -346,7 +382,7 @@ END table_from_list;
         END;
     END add_new_jobs;
     
-    --2--
+--------------2--
     PROCEDURE del_jobs ( p_job_id    IN VARCHAR2,
                          po_result   OUT VARCHAR2) IS
     v_job_id dima.jobs.job_id%type;                        
@@ -370,7 +406,7 @@ END table_from_list;
         END;
     END del_jobs;
     
-    --3--
+---------3-----
     PROCEDURE update_balance(p_employee_id IN NUMBER,
                              p_balance IN NUMBER) IS
                              
@@ -415,7 +451,7 @@ END table_from_list;
     END update_balance;
     
     
-    --4-- Процедура - механізму додавання нового співробітника
+-------- Процедура механізму додавання нового співробітника
     
     PROCEDURE add_employee (  p_first_name IN VARCHAR2,
                               p_last_name IN VARCHAR2,
@@ -430,28 +466,13 @@ END table_from_list;
                           
         v_job_id_exist NUMBER;
         v_department_id_exist NUMBER;
-        v_sql VARCHAR2(600);
+        v_sql VARCHAR2(500);
         v_min_salary NUMBER;
         v_max_salary NUMBER;
         v_employee_id NUMBER;
         v_sqlerrm VARCHAR2(600);
         
-        -- функция проверки наличия в таблице по ячейке
-        FUNCTION is_exist ( p_func IN VARCHAR2 DEFAULT 'count(*)',
-                            p_what IN VARCHAR2,
-                            p_colum IN VARCHAR2,
-                            p_where IN VARCHAR2 ) RETURN NUMBER IS
-                               
-             v_result NUMBER;
-             vv_sql VARCHAR2(600);
-          BEGIN
-            
-            vv_sql := 'select ' || p_func ||' FROM dima.'||p_where||' p
-                    WHERE p.'|| p_colum ||'='''|| p_what ||''' ';
-            EXECUTE IMMEDIATE vv_sql INTO v_result;
-                        
-          RETURN v_result;
-          END is_exist;
+        
         --  
          FUNCTION get_max_employee_id RETURN NUMBER IS
              vv_employee_id NUMBER;
@@ -465,24 +486,24 @@ END table_from_list;
         --
                           
     BEGIN
-        --1
+            --
             log_util.log_start('add_employee');
             
-        --2 проверка 1
+            --2 проверка 1
             v_job_id_exist := is_exist('count(*)',p_job_id,'job_id','jobs');
             
                 IF v_job_id_exist =0 THEN
                     raise_application_error(-20001,'Введено неіснуючий код посади');
                 END IF;
                 
-        --3 проверка 2  
+            --3 проверка 2  
             v_department_id_exist := is_exist ('count(*)',p_department_id,'department_id','departments');
                 
                 IF v_department_id_exist =0 THEN
                     raise_application_error(-20001,'Введено неіснуючий ідентифікатор відділу');
                 END IF;
         
-        --4 проверка 3    
+             --4 проверка 3    
              v_min_salary := is_exist('min_salary',p_job_id,'job_id','jobs');
              v_max_salary := is_exist('max_salary',p_job_id,'job_id','jobs');
                 
@@ -490,37 +511,83 @@ END table_from_list;
                     raise_application_error(-20001,'Введено неприпустиму заробітну плату для даного коду посади');
                  END IF;
         
-        --5 проверка рабочего времени
-                IF TO_CHAR(SYSDATE, 'DY') IN ('СБ', 'ВС') OR TO_CHAR(SYSDATE, 'hh24') < 8 OR TO_CHAR(SYSDATE, 'hh24') > 17 THEN
-                        raise_application_error (-20001, 'Ви можете додавати нового співробітника лише в робочий час');
-                    END IF;
-                    
-        --6
-            v_employee_id := get_max_employee_id();
+              --5 проверка рабочего времени
+                time_access(); 
+                
+              --6
+                v_employee_id := get_max_employee_id();
         
         INSERT INTO dima.employees(employee_id, first_name, last_name, email, phone_number, hire_date, job_id, salary, commission_pct, manager_id, department_id)
         VALUES(v_employee_id, p_first_name, p_last_name, p_email, p_phone_number, p_hire_date, p_job_id, p_salary, p_commission_pct, p_manager_id, p_department_id);
         COMMIT;
         
---        Співробітник ІМ'Я, Прізвище, КОД ПОСАДИ, ІД ДЕПАРТАМЕНТУ успішно додано до системи
-        dbms_output.put_line('Співробітник '||p_first_name||' '||p_last_name ||' ' ||p_job_id ||' ІД ДЕПАРТАМЕНТУ='||p_department_id|| 'успішно додано до системи');
-        
-            v_sql := 'Співробітник '||p_first_name||' '||p_last_name ||' ' ||p_job_id ||' ІД ДЕПАРТАМЕНТУ='||p_department_id|| 'успішно додано до системи';
+             -- Співробітник ІМ'Я, Прізвище, КОД ПОСАДИ, ІД ДЕПАРТАМЕНТУ успішно додано до системи
+        dbms_output.put_line('Співробітник '||p_first_name||' '||p_last_name ||' ' ||p_job_id ||' ІД ДЕПАРТАМЕНТУ = '||p_department_id|| ' успішно додано до системи');
+            v_sql := 'Співробітник '||p_first_name||' '||p_last_name ||' ' ||p_job_id ||' ІД ДЕПАРТАМЕНТУ = '||p_department_id|| ' успішно додано до системи';
         log_util.log_finish('add_employee',v_sql);
-        
 
         
     EXCEPTION
         
         WHEN OTHERS THEN
-            v_sqlerrm := sqlerrm ||' Не відома помилка' ;
+            v_sqlerrm := sqlerrm  ;
             log_util.log_error('add_employee',  v_sqlerrm); 
             ROLLBACK; -- Відміняємо транзакцію у разі виникнення помилки
             raise_application_error(-20001, sqlerrm);
     
     END add_employee;
 
-        --
+------- процедура механізму звільнення існуючого співробітника
+        
+        PROCEDURE fire_an_employee (  p_employee_id IN NUMBER ) IS
+        
+            v_employee_id_exist NUMBER;
+            v_com_history NUMBER :=0;
+            v_empl VARCHAR2(300);
+            vo_result VARCHAR2(350);
+            v_sqlerrm VARCHAR2(300);
+        
+        BEGIN
+            
+            log_util.log_start('fire_an_employee');
+        
+            v_employee_id_exist := is_exist('count(*)',p_employee_id,'employee_id','employees');
+                IF v_employee_id_exist =0 THEN
+                    raise_application_error(-20001,'Переданий співробітник не існує');
+                END IF;
+                                --удаление возможно в разрешенный период
+            time_access();
+                                --добавление сотрудника в таблицу истории сотрудников
+            INSERT INTO dima.employees_history (employee_id,first_name,last_name,email,phone_number,start_date,end_date,job_id,department_id)
+                                    select employee_id,first_name,last_name,email,phone_number,hire_date,sysdate,job_id,department_id 
+                                    from dima.employees
+                                    where employee_id = p_employee_id;
+                                    
+                    --формат співробітника ім'я,прізвище, код посади успільності, ід департаменту
+                select first_name||' '||last_name ||' код посади - ' ||job_id ||' ІД ДЕПАРТАМЕНТУ = '|| department_id as v_empl
+                INTO v_empl 
+                from dima.employees
+                where employee_id = p_employee_id;
+            
+            delete from dima.employees em
+                     where em.employee_id = p_employee_id;
+                     COMMIT;    
+                vo_result := 'Співробітника '||p_employee_id||' '||v_empl||' успішно звільнено';
+                dbms_output.put_line(vo_result);    
+                     
+            
+            log_util.log_finish('fire_an_employee',vo_result);
+        
+                
+        EXCEPTION
+                
+                WHEN OTHERS THEN
+                    v_sqlerrm := sqlerrm ;
+                    log_util.log_error('fire_an_employee',  v_sqlerrm); 
+                    ROLLBACK; -- Відміняємо транзакцію у разі виникнення помилки
+                    raise_application_error(-20001, sqlerrm);
+            
+        END fire_an_employee;
 
     
 END util;
