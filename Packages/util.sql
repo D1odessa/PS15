@@ -545,7 +545,6 @@ END table_from_list;
         PROCEDURE fire_an_employee (  p_employee_id IN NUMBER ) IS
         
             v_employee_id_exist NUMBER;
-            v_com_history NUMBER :=0;
             v_empl VARCHAR2(300);
             vo_result VARCHAR2(350);
             v_sqlerrm VARCHAR2(300);
