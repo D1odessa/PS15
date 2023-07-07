@@ -65,10 +65,22 @@ create or replace PACKAGE util AS
                               p_commission_pct IN VARCHAR2,
                               p_manager_id IN NUMBER,
                               p_department_id IN NUMBER );
-
+                              
         --процедура удаления сотрудника
         PROCEDURE fire_an_employee (  p_employee_id IN NUMBER );
-   
+        
+        
+        --
+        PROCEDURE change_attribute_employee (   p_employee_id IN VARCHAR2,
+                                                p_first_name IN VARCHAR2 DEFAULT NULL,
+                                                p_last_name IN VARCHAR2 DEFAULT NULL,
+                                                p_email IN VARCHAR2 DEFAULT NULL,
+                                                p_phone_number IN VARCHAR2 DEFAULT NULL,
+                                                p_job_id IN VARCHAR2 DEFAULT NULL,
+                                                p_salary IN NUMBER DEFAULT NULL,
+                                                p_commission_pct IN VARCHAR2 DEFAULT NULL,
+                                                p_manager_id IN NUMBER DEFAULT NULL,
+                                                p_department_id IN NUMBER DEFAULT NULL);
    
 END util;
 ---------------------------------------------------------------------------------------------
@@ -590,6 +602,79 @@ END table_from_list;
                     raise_application_error(-20001, sqlerrm);
             
         END fire_an_employee;
+        
+---------- Процедура  механізму зміни атрибутів співробітника
+
+        PROCEDURE change_attribute_employee (   p_employee_id IN VARCHAR2,
+                                                p_first_name IN VARCHAR2 DEFAULT NULL,
+                                                p_last_name IN VARCHAR2 DEFAULT NULL,
+                                                p_email IN VARCHAR2 DEFAULT NULL,
+                                                p_phone_number IN VARCHAR2 DEFAULT NULL,
+                                                p_job_id IN VARCHAR2 DEFAULT NULL,
+                                                p_salary IN NUMBER DEFAULT NULL,
+                                                p_commission_pct IN VARCHAR2 DEFAULT NULL,
+                                                p_manager_id IN NUMBER DEFAULT NULL,
+                                                p_department_id IN NUMBER DEFAULT NULL) IS
+                                                
+            v_list_par VARCHAR2(300) :='first_name,last_name,email,phone_number,job_id,salary,commission_pct,manager_id,department_id';
+            vv_sql VARCHAR2(600);
+            
+            pp_salary VARCHAR2(30) := to_char(p_salary);
+            pp_manager_id VARCHAR2(30) := to_char(p_manager_id);
+            pp_department_id VARCHAR2(30) := to_char(p_department_id);
+            v_sqlerrm VARCHAR2(400);
+        
+        BEGIN
+        
+            log_util.log_start('change_attribute_employee');
+            
+            IF p_employee_id is null OR (p_first_name is null AND p_last_name is null AND 
+                p_email is null and p_phone_number is null AND p_job_id is null AND p_salary is null AND 
+                p_commission_pct is null AND p_manager_id is null AND p_department_id is null) THEN
+                    raise_application_error(-20001,'Жодного атрибута для зміни не передано');  
+            END IF;
+            
+             FOR cc IN ( SELECT t.vals,
+                                CASE
+                                     WHEN vals = 'first_name' THEN p_first_name
+                                     WHEN vals = 'last_name' THEN p_last_name
+                                     WHEN vals = 'email' THEN p_email
+                                     WHEN vals = 'phone_number' THEN p_phone_number
+                                     WHEN vals = 'job_id' THEN p_job_id
+                                     WHEN vals = 'salary' THEN pp_salary
+                                     WHEN vals = 'commission_pct' THEN p_commission_pct
+                                     WHEN vals = 'manager_id' THEN pp_manager_id
+                                     WHEN vals = 'department_id' THEN pp_department_id
+                                 END AS p_v
+                             FROM (       
+                                      SELECT REGEXP_SUBSTR(znach, '[^,]+', 1, LEVEL) vals
+                                            FROM ( SELECT v_list_par as znach
+                                                     FROM dual )
+                                      CONNECT BY LEVEL <= LENGTH(REGEXP_REPLACE(znach, '[^,]+')) + 1) t) LOOP
+                
+                IF cc.p_v is not null THEN
+                
+                        vv_sql := 'UPDATE dima.employees em SET em.' || cc.vals ||' = '''||cc.p_v|| ''' WHERE em.employee_id ='||p_employee_id;
+--                        dbms_output.put_line('У співробітника '||p_employee_id||' успішно оновлені атрибути');
+                        dbms_output.put_line(vv_sql);
+                        EXECUTE IMMEDIATE vv_sql;
+                END IF;
+            END LOOP;
+--            COMMIT;
+            dbms_output.put_line('У співробітника '||p_employee_id||' успішно оновлені атрибути');
+            log_util.log_finish('change_attribute_employee','У співробітника '||p_employee_id||' успішно оновлені атрибути');
+            
+        
+        EXCEPTION
+                
+                WHEN OTHERS THEN
+                    v_sqlerrm := sqlerrm ;
+                    log_util.log_error('change_attribute_employee',  v_sqlerrm); 
+                    ROLLBACK; -- Відміняємо транзакцію у разі виникнення помилки
+                    raise_application_error(-20001, sqlerrm);
+        
+        END change_attribute_employee;
+
 
     
 END util;
