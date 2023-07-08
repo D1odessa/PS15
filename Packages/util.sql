@@ -28,10 +28,10 @@ create or replace PACKAGE util AS
     
     FUNCTION get_sum_price_sales(p_table VARCHAR2 DEFAULT 'products') RETURN NUMBER;
     
-    FUNCTION table_from_list(   p_list_val IN VARCHAR2,
+    FUNCTION table_from_list(   p_list_val  IN VARCHAR2,
                                 p_separator IN VARCHAR2 DEFAULT ',') RETURN tab_value_list PIPELINED;
         
-    FUNCTION get_currency (  p_currency IN VARCHAR2 DEFAULT 'USD',
+    FUNCTION get_currency (  p_currency     IN VARCHAR2 DEFAULT 'USD',
                              p_exchangedate IN DATE DEFAULT SYSDATE) RETURN tab_exchange PIPELINED;
                              
     FUNCTION get_region_cnt_emp ( p_department_id NUMBER default null) RETURN tab_regions_list PIPELINED;
@@ -40,49 +40,60 @@ create or replace PACKAGE util AS
    
    PROCEDURE check_work_time;
    
-   PROCEDURE add_new_jobs(p_job_id        IN VARCHAR2,
+   PROCEDURE add_new_jobs (   p_job_id        IN VARCHAR2,
                               p_job_title     IN VARCHAR2,
                               p_min_salary    IN NUMBER,
                               p_max_salary    IN NUMBER DEFAULT NULL,
-                              po_err          OUT VARCHAR2);
+                              po_err          OUT VARCHAR2 );
                               
     --
     PROCEDURE del_jobs ( p_job_id    IN VARCHAR2,
                          po_result   OUT VARCHAR2);
                          
     --
-    PROCEDURE update_balance(p_employee_id IN NUMBER,
-                             p_balance IN NUMBER);
+    PROCEDURE update_balance(p_employee_id  IN NUMBER,
+                             p_balance      IN NUMBER);
                              
     -- механізму додавання нового співробітника                         
-    PROCEDURE add_employee (  p_first_name IN VARCHAR2,
-                              p_last_name IN VARCHAR2,
-                              p_email IN VARCHAR2,
-                              p_phone_number IN VARCHAR2,
-                              p_hire_date IN DATE DEFAULT trunc(sysdate, 'dd'),
-                              p_job_id IN VARCHAR2,
-                              p_salary IN NUMBER,
-                              p_commission_pct IN VARCHAR2,
-                              p_manager_id IN NUMBER,
-                              p_department_id IN NUMBER );
+    PROCEDURE add_employee (  p_first_name      IN VARCHAR2,
+                              p_last_name       IN VARCHAR2,
+                              p_email           IN VARCHAR2,
+                              p_phone_number    IN VARCHAR2,
+                              p_hire_date       IN DATE DEFAULT trunc(sysdate, 'dd'),
+                              p_job_id          IN VARCHAR2,
+                              p_salary          IN NUMBER,
+                              p_commission_pct  IN VARCHAR2,
+                              p_manager_id      IN NUMBER,
+                              p_department_id   IN NUMBER );
                               
         --процедура удаления сотрудника
         PROCEDURE fire_an_employee (  p_employee_id IN NUMBER );
         
         
         --
-        PROCEDURE change_attribute_employee (   p_employee_id IN VARCHAR2,
-                                                p_first_name IN VARCHAR2 DEFAULT NULL,
-                                                p_last_name IN VARCHAR2 DEFAULT NULL,
-                                                p_email IN VARCHAR2 DEFAULT NULL,
-                                                p_phone_number IN VARCHAR2 DEFAULT NULL,
-                                                p_job_id IN VARCHAR2 DEFAULT NULL,
-                                                p_salary IN NUMBER DEFAULT NULL,
+        PROCEDURE change_attribute_employee (   p_employee_id    IN VARCHAR2,
+                                                p_first_name     IN VARCHAR2 DEFAULT NULL,
+                                                p_last_name      IN VARCHAR2 DEFAULT NULL,
+                                                p_email          IN VARCHAR2 DEFAULT NULL,
+                                                p_phone_number   IN VARCHAR2 DEFAULT NULL,
+                                                p_job_id         IN VARCHAR2 DEFAULT NULL,
+                                                p_salary         IN NUMBER DEFAULT NULL,
                                                 p_commission_pct IN VARCHAR2 DEFAULT NULL,
-                                                p_manager_id IN NUMBER DEFAULT NULL,
-                                                p_department_id IN NUMBER DEFAULT NULL);
+                                                p_manager_id     IN NUMBER DEFAULT NULL,
+                                                p_department_id  IN NUMBER DEFAULT NULL );
+                                                
+        -- процедура копирования таблиц
+        PROCEDURE copy_table (   p_source_scheme IN VARCHAR2,
+                                 p_target_scheme IN VARCHAR2 DEFAULT USER,
+                                 p_list_table    IN VARCHAR2 ,
+                                 p_copy_data     IN BOOLEAN DEFAULT FALSE,
+                                 po_result       OUT VARCHAR2 );
+                                 
+        
    
 END util;
+---------------------------------------------------------------------------------------------
+---  UTIL BODY ---
 ---------------------------------------------------------------------------------------------
 create or replace PACKAGE BODY util AS
 
@@ -605,15 +616,15 @@ END table_from_list;
         
 ---------- Процедура  механізму зміни атрибутів співробітника
 
-        PROCEDURE change_attribute_employee (   p_employee_id IN VARCHAR2,
-                                                p_first_name IN VARCHAR2 DEFAULT NULL,
-                                                p_last_name IN VARCHAR2 DEFAULT NULL,
-                                                p_email IN VARCHAR2 DEFAULT NULL,
-                                                p_phone_number IN VARCHAR2 DEFAULT NULL,
-                                                p_job_id IN VARCHAR2 DEFAULT NULL,
-                                                p_salary IN NUMBER DEFAULT NULL,
+        PROCEDURE change_attribute_employee (   p_employee_id   IN VARCHAR2,
+                                                p_first_name    IN VARCHAR2 DEFAULT NULL,
+                                                p_last_name     IN VARCHAR2 DEFAULT NULL,
+                                                p_email         IN VARCHAR2 DEFAULT NULL,
+                                                p_phone_number  IN VARCHAR2 DEFAULT NULL,
+                                                p_job_id        IN VARCHAR2 DEFAULT NULL,
+                                                p_salary        IN NUMBER DEFAULT NULL,
                                                 p_commission_pct IN VARCHAR2 DEFAULT NULL,
-                                                p_manager_id IN NUMBER DEFAULT NULL,
+                                                p_manager_id    IN NUMBER DEFAULT NULL,
                                                 p_department_id IN NUMBER DEFAULT NULL) IS
                                                 
             v_list_par VARCHAR2(300) :='first_name,last_name,email,phone_number,job_id,salary,commission_pct,manager_id,department_id';
@@ -676,5 +687,111 @@ END table_from_list;
         END change_attribute_employee;
 
 
+----------  Процедура копирования таблиц
+    
+        PROCEDURE copy_table (   p_source_scheme IN VARCHAR2,
+                                 p_target_scheme IN VARCHAR2 DEFAULT USER,
+                                 p_list_table    IN VARCHAR2 ,
+                                 p_copy_data     IN BOOLEAN DEFAULT FALSE,
+                                 po_result       OUT VARCHAR2 ) IS
+    
+--    po_result VARCHAR2(1000);
+--    p_copy_data BOOLEAN := TRUE;  
+--  
+--    p_list_table VARCHAR2(300) := 'EMPLOYEES,LOGS,COUNTRIES,JOBS,LOCATIONS';    
+--    p_source_scheme VARCHAR2(30) := 'HR';
+        v_source_scheme VARCHAR2(300) := ''''||p_source_scheme||'''';  
+--    p_target_scheme VARCHAR2(30) := 'DIMA';
+        v_target_scheme VARCHAR2(300) := p_target_scheme||'.'; 
+    v_tab VARCHAR2(100);   --имя таблицы для перебора в цикле for
+    v_ddl_select VARCHAR2(2000);  -- DDL команды в v_sql
+    v_sql VARCHAR2(2000);   -- DDL команда создания таблицы
+     
+    t_exist number;
+    v_sql_exist VARCHAR2(300);
+                                    
+BEGIN
+        log_util.log_start('copy_table');
+         dbms_output.put_line(p_list_table);   
+         dbms_output.put_line('from '||v_source_scheme|| ' to '||v_target_scheme);
+                  
+         FOR i in (select * from TABLE (util.table_from_list( p_list_table))) loop
+         
+         <<search_tables>>
+            BEGIN
+--                dbms_output.put_line(i.VALUE_LIST); --значение текущей иттерации цикла 
+                v_tab := ''''||i.VALUE_LIST||'''';
+                
+                --проверка, есть ли такая таблица в схеме для создания таблиц 
+                  v_sql_exist :=  ' SELECT count(*) from all_tab_columns
+                                        where owner = '||''''||p_target_scheme||''''||
+                                        ' AND TABLE_NAME IN ('||v_tab||')';
+                                        
+                  EXECUTE IMMEDIATE v_sql_exist into t_exist ;
+                                
+                    IF t_exist = 0 THEN 
+                
+                v_ddl_select  := 'select table_name||'' (''||LISTAGG(column_name ||'' ''|| data_type||count_symbol,'', '')
+                                            WITHIN GROUP(ORDER BY column_id)||'')'' AS ddl_code
+                                    FROM (SELECT table_name,
+                                             column_name,
+                                             data_type,
+                                             CASE
+                                             WHEN data_type = ''VARCHAR2'' THEN ''(''||data_length||'')'' 
+                                             WHEN data_type = ''CHAR'' THEN ''(''||data_length||'')''
+                                             WHEN data_type = ''DATE'' THEN NULL
+                                             WHEN data_type = ''NUMBER'' THEN replace( ''(''||data_precision||'',''||data_scale||'')'', ''(,)'', NULL)
+                                             END AS count_symbol,
+                                             column_id
+                                 FROM all_tab_columns
+                                 WHERE owner ='||v_source_scheme||'
+                                 AND table_name IN ('||v_tab||')
+                                 ORDER BY table_name, column_id)
+                                 GROUP BY table_name';
+                                 
+                 -- выборка таблицы для создания и ее столбцов                
+                EXECUTE IMMEDIATE v_ddl_select into v_sql ; 
+                  
+                 --создание таблицы                    
+                 v_sql := 'CREATE TABLE '||v_target_scheme||v_sql;
+--                      dbms_output.put_line(v_sql);
+                 EXECUTE IMMEDIATE v_sql;
+                    log_util.log_start('copy_table','создана таблица '||i.VALUE_LIST||' в схеме '||p_target_scheme);
+                    po_result := po_result||'создана таблица '||i.VALUE_LIST ||',';
+                    
+                    --копировать данные с таблицы?
+                    IF p_copy_data = TRUE THEN
+                    
+                        v_ddl_select := 'INSERT INTO '||p_target_scheme||'.' ||i.VALUE_LIST||' SELECT * FROM '||p_source_scheme||'.'||i.VAlUE_LIST;
+                            dbms_output.put_line(v_ddl_select);
+                        EXECUTE IMMEDIATE v_ddl_select ; 
+                            log_util.log_start('copy_table','в таблицу '||i.VALUE_LIST||' скопированы данные из схемы '||p_source_scheme);
+                         
+                    END IF;
+                
+                ELSE
+                    dbms_output.put_line( ' table = '||i.VALUE_LIST||', имеется в схеме');
+                    log_util.log_start('copy_table',' table = '||i.VALUE_LIST||', имеется в схеме');
+        
+                END IF;
+        
+            EXCEPTION
+                    WHEN no_data_found THEN
+                        dbms_output.put_line( ' table = '||i.VALUE_LIST||', не знайдена  в схеме джерела');
+                        log_util.log_start('copy_table',' table = '||i.VALUE_LIST||', не знайдена  в схеме джерела');
+                    CONTINUE;
+                    
+                    WHEN OTHERS THEN
+                            log_util.log_error('copy_table',  sqlerrm); 
+                            raise_application_error(-20001, sqlerrm);
+                    
+            END search_tables;
+        
+        END LOOP;
+--    dbms_output.put_line(po_result);
+        log_util.log_finish('copy_table');
+END copy_table; 
+
+        
     
 END util;
