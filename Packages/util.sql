@@ -695,13 +695,9 @@ END table_from_list;
                                  p_copy_data     IN BOOLEAN DEFAULT FALSE,
                                  po_result       OUT VARCHAR2 ) IS
     
---    po_result VARCHAR2(1000);
---    p_copy_data BOOLEAN := TRUE;  
---  
---    p_list_table VARCHAR2(300) := 'EMPLOYEES,LOGS,COUNTRIES,JOBS,LOCATIONS';    
---    p_source_scheme VARCHAR2(30) := 'HR';
+
         v_source_scheme VARCHAR2(300) := ''''||p_source_scheme||'''';  
---    p_target_scheme VARCHAR2(30) := 'DIMA';
+
         v_target_scheme VARCHAR2(300) := p_target_scheme||'.'; 
     v_tab VARCHAR2(100);   --имя таблицы для перебора в цикле for
     v_ddl_select VARCHAR2(2000);  -- DDL команды в v_sql
