@@ -88,7 +88,11 @@ create or replace PACKAGE util AS
                                  p_list_table    IN VARCHAR2 ,
                                  p_copy_data     IN BOOLEAN DEFAULT FALSE,
                                  po_result       OUT VARCHAR2 );
-                                 
+
+
+        -- т6 процедура синхронізації даних з API у базу даних (курсы валют )
+        PROCEDURE api_nbu_sync ( p_list_currencies VARCHAR2 DEFAULT 'USD,EUR,KZT,AMD,GBP,ILS' );
+
         
    
 END util;
@@ -789,6 +793,48 @@ BEGIN
         log_util.log_finish('copy_table');
 END copy_table; 
 
+
+------------- т6 процедура синхронізації даних з API у базу даних (курсы валют ) ------------------------------------
+            PROCEDURE api_nbu_sync ( p_list_currencies VARCHAR2 DEFAULT 'USD,EUR,KZT,AMD,GBP,ILS' ) IS
+                        
+                    v_list_currencies VARCHAR2(200);
+                    v_sql VARCHAR2(400);
+            BEGIN   
+                    -- очистка таблицы и запись шапки 
+                    v_sql := 'TRUNCATE TABLE dima.sys_params';
+                        EXECUTE IMMEDIATE v_sql ;
+                    INSERT INTO dima.sys_params (value_text, param_descr) 
+                            VALUES (p_list_currencies,'Список валют для синхронізації в процедурі util.api_nbu_sync');
+                            COMMIT;
+                            
+                    v_list_currencies := p_list_currencies;
+                    
+                    FOR cc IN ( SELECT value_list AS curr FROM TABLE(util.table_from_list(p_list_val => v_list_currencies)) ) LOOP
+                            
+                            <<insert_block>>
+                            BEGIN
+                            
+                            dbms_output.put_line('insert '||cc.curr);
+                                v_sql :=    ' INSERT INTO sys_params (param_name, value_text, value_number, param_descr, value_date)
+                                             SELECT * FROM TABLE(util.get_currency(p_currency => '||''''||cc.curr||''''||'))';
+            --                        dbms_output.put_line(v_sql);
+                            
+                                EXECUTE IMMEDIATE v_sql ;
+                                
+                             EXCEPTION
+                                WHEN OTHERS THEN
+                                    log_util.log_error('api_nbu_sync',sqlerrm);
+                                    raise_application_error(-20001, sqlerrm);
+                        
+                            END insert_block ;
+                    
+                    END LOOP;
+                    
+                    COMMIT;
+                    log_util.log_finish('api_nbu_sync');
+                
+            END api_nbu_sync;
+------------------------------------
         
     
 END util;
