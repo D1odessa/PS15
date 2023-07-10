@@ -761,6 +761,7 @@ BEGIN
                         v_ddl_select := 'INSERT INTO '||p_target_scheme||'.' ||i.VALUE_LIST||' SELECT * FROM '||p_source_scheme||'.'||i.VAlUE_LIST;
                             dbms_output.put_line(v_ddl_select);
                         EXECUTE IMMEDIATE v_ddl_select ; 
+                            COMMIT;
                             log_util.log_start('copy_table','в таблицу '||i.VALUE_LIST||' скопированы данные из схемы '||p_source_scheme);
                          
                     END IF;
